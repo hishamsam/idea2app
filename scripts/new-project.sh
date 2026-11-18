@@ -111,8 +111,7 @@ EOF
 
 # Copy the Design Blueprint template
 if [ -f "$ROOT/templates/DESIGN-BLUEPRINT.md" ]; then
-  cp "$ROOT/templates/DESIGN-BLUEPRINT.md" "$DEST/design/DESIGN-BLUEPRINT.md"
-  sed -i "s/{{SLUG}}/$SLUG/g" "$DEST/design/DESIGN-BLUEPRINT.md" 2>/dev/null || true
+  sed "s/{{SLUG}}/$SLUG/g" "$ROOT/templates/DESIGN-BLUEPRINT.md" > "$DEST/design/DESIGN-BLUEPRINT.md"
 fi
 
 echo "Project created: projects/$SLUG (stack $STACK)"

@@ -13,9 +13,9 @@ shift || true
 while [ $# -gt 0 ]; do
   case "$1" in
     --check) CHECK=1 ;;
-    --port) PORT="${2:-4173}"; shift ;;
-    --path) PATHS+=("${2:-/}"); shift ;;
-    *) echo "Unknown argument: $1"; exit 1 ;;
+    --port) [ $# -ge 2 ] || { echo "Missing value for --port" >&2; exit 1; }; PORT="$2"; shift ;;
+    --path) [ $# -ge 2 ] || { echo "Missing value for --path" >&2; exit 1; }; PATHS+=("$2"); shift ;;
+    *) echo "Unknown argument: $1" >&2; exit 1 ;;
   esac
   shift
 done
@@ -58,7 +58,7 @@ run_static() {
   fi
   echo "Static server: http://localhost:$PORT ($FRONT)"
   if [ "$CHECK" -eq 1 ]; then
-    (cd "$FRONT" && exec python3 -m http.server "$PORT" >/tmp/opencode-http-$SLUG.log 2>&1) &
+    (cd "$FRONT" && exec python3 -m http.server "$PORT" >"${TMPDIR:-/tmp}/idea2app-http-$SLUG.log" 2>&1) &
     PID=$!
     trap 'kill $PID 2>/dev/null || true; pkill -P $PID 2>/dev/null || true' EXIT
     sleep 1
@@ -81,7 +81,7 @@ run_dev() {
   fi
   echo "$label: http://localhost:$PORT (${dir#$ROOT/})"
   if [ "$CHECK" -eq 1 ]; then
-    local log="/tmp/opencode-dev-$SLUG.log"
+    local log="${TMPDIR:-/tmp}/idea2app-dev-$SLUG.log"
     (cd "$dir" && "$@" >"$log" 2>&1) &
     PID=$!
     trap 'kill $PID 2>/dev/null || true; pkill -P $PID 2>/dev/null || true' EXIT
@@ -105,16 +105,18 @@ run_wrangler() {
   echo "Wrangler dev (Ctrl+C to stop)"
   cd "$dir"
   if [ "$CHECK" -eq 1 ]; then
-    npx wrangler dev --port "$PORT" >/tmp/opencode-wrangler-$SLUG.log 2>&1 &
+    local log="${TMPDIR:-/tmp}/idea2app-wrangler-$SLUG.log"
+    npx wrangler dev --port "$PORT" >"$log" 2>&1 &
     PID=$!
     trap 'kill $PID 2>/dev/null || true; pkill -P $PID 2>/dev/null || true' EXIT
+    code="000"
     for _ in $(seq 1 30); do
       code="$(curl -s -o /dev/null -w '%{http_code}' "http://localhost:$PORT/" || true)"
       [ "$code" != "000" ] && break
       sleep 1
     done
     echo "HTTP $code"
-    [ "$code" != "000" ] || { echo "FAIL: Worker did not start. See /tmp/opencode-wrangler-$SLUG.log"; exit 1; }
+    [ "$code" != "000" ] || { echo "FAIL: Worker did not start. See $log"; exit 1; }
     check_extra "http://localhost:$PORT"
     echo "PASS: Worker responded."
   else
@@ -123,7 +125,7 @@ run_wrangler() {
 }
 
 run_firebase() {
-  local cfg="$APP/firebase.json" log="/tmp/opencode-firebase-$SLUG.log"
+  local cfg="$APP/firebase.json" log="${TMPDIR:-/tmp}/idea2app-firebase-$SLUG.log"
   if [ ! -f "$cfg" ]; then
     echo "FAIL: firebase.json missing in ${APP#$ROOT/}."
     exit 1
@@ -228,7 +230,7 @@ case "$STACK" in
       exit 1
     fi
     if [ "$CHECK" -eq 1 ]; then
-      log="/tmp/opencode-flutter-$SLUG.log"
+      log="${TMPDIR:-/tmp}/idea2app-flutter-$SLUG.log"
       (cd "$APP" && flutter build web --release) >"$log" 2>&1 \
         || { echo "FAIL: flutter build web failed. See $log"; exit 1; }
       FRONT="$APP/build/web"

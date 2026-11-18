@@ -61,7 +61,16 @@ PASS=0
 ROWS=()
 
 json_escape() {
-  printf '%s' "$1" | tr -d '\r' | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/	/\\t/g'
+  printf '%s' "$1" | tr -d '\r' | awk '
+    BEGIN { ORS="" }
+    {
+      gsub(/\\/, "\\\\")
+      gsub(/"/, "\\\"")
+      gsub(/\t/, "\\t")
+      if (NR > 1) printf "\\n"
+      printf "%s", $0
+    }
+  '
 }
 
 # hits <pattern> — matching file:line lines, first three, app source only
@@ -252,6 +261,7 @@ case "$STACK" in
     ;;
 esac
 
+# 14. Plaintext transport
 ev=""
 if [ "${#CLIENT[@]}" -gt 0 ]; then
   ev="$(grep -nE 'http://' "${CLIENT[@]}" 2>/dev/null | grep -vE 'localhost|127\.0\.0\.1|w3\.org' | head -3)"

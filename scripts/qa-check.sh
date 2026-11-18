@@ -103,7 +103,7 @@ if [ "$FLUTTER" -eq 1 ]; then
 else
 
 # 1. Meta viewport
-if grep -qi "${GREP[@]}" 'name="viewport"\|viewport' "$SCAN"; then
+if grep -qiE "${GREP[@]}" 'name="viewport"|viewport' "$SCAN"; then
   ok "meta viewport"
 elif [ "$FRAMEWORK" -eq 1 ]; then
   warn "no viewport pattern found — check the framework configuration"
@@ -127,7 +127,7 @@ fi
 
 # 4. Dead buttons (rough count)
 BUTTONS=$(grep -rho "${GREP[@]}" '<button' "$SCAN" | wc -l | tr -d ' ')
-ACTIONS=$(grep -rho "${GREP[@]}" 'data-action=\|onClick=\|@click=' "$SCAN" | wc -l | tr -d ' ')
+ACTIONS=$(grep -rhoiE "${GREP[@]}" 'data-action=|onclick=|@click=|addEventListener\(["'"'"']click["'"'"']' "$SCAN" | wc -l | tr -d ' ')
 if [ "$BUTTONS" -gt 0 ] && [ "$ACTIONS" -lt "$BUTTONS" ]; then
   warn "$BUTTONS buttons, $ACTIONS handlers — check for buttons without a handler"
 else

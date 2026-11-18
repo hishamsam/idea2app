@@ -1,4 +1,4 @@
-# Rahsia & fail sementara
+# Secrets & temporary files
 .env
 .env.*
 !.env.example

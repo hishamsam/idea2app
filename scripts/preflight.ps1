@@ -2,8 +2,8 @@
 # Usage: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/preflight.ps1 [-Install] [-Json] [-Stack A-K]
 #
 # Reads scripts/tools.tsv, reports every selected tool, and with -Install installs
-# upgrades an existing runtime, and never installs Docker or Flutter
-# by itself. ASCII only; Windows PowerShell 5.1 compatible.
+# the missing ones that can be installed unattended. It never upgrades an existing
+# runtime, and never installs Docker or Flutter by itself. ASCII only; Windows PowerShell 5.1 compatible.
 
 [CmdletBinding()]
 param(
@@ -182,6 +182,7 @@ $bashCmd = Get-Command bash -ErrorAction SilentlyContinue
 if ($bashCmd) {
     $bashStatus = 'ok'
     $bashVersion = Get-ToolVersion 'bash' '--version'
+    $bashHint = $null
 }
 elseif ($env:ProgramFiles) {
     $candidate = Join-Path $env:ProgramFiles 'Git\bin\bash.exe'

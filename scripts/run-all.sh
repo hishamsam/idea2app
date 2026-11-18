@@ -10,7 +10,7 @@ set -uo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SLUG="${1:-}"
-STACK="${2:-A}"
+STACK="${2:-B}"
 FAIL=0
 
 banner() { echo; echo "=== $1 ==="; }

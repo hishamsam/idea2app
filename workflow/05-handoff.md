@@ -67,7 +67,7 @@ report 0 `FAIL` and no `confirmed` high/critical record may remain open
 - Redeploy instructions.
 - Backup & rollback.
 - Known limits (quotas, stack limits, Phase 2 work).
-- Links to the PRD, design, and PNG exports.
+- Links to the PRD, design blueprint, security report, and reference files.
 
 ## Backup & rollback
 

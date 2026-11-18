@@ -90,7 +90,16 @@ if [ -r /etc/os-release ]; then
 fi
 
 json_escape() {
-  printf '%s' "$1" | tr -d '\r' | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g' -e 's/	/\\t/g'
+  printf '%s' "$1" | tr -d '\r' | awk '
+    BEGIN { ORS="" }
+    {
+      gsub(/\\/, "\\\\")
+      gsub(/"/, "\\\"")
+      gsub(/\t/, "\\t")
+      if (NR > 1) printf "\\n"
+      printf "%s", $0
+    }
+  '
 }
 
 jstr() {
